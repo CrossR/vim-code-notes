@@ -53,7 +53,11 @@ let g:code_notes#note_ext = ".md"
 " Returns a string, for the notes path.
 "
 " Defaults to swapping all '/' -> '_'.
-let g:code_notes#note_name_format = "My_Function_To_Format_The_Path"
+function! CodeNotePathFormat(repo_relative_path) abort
+    return substitute(a:repo_relative_path, "/", "_", "g")
+endfunction
+
+let g:code_notes#note_name_format = "CodeNotePathFormat"
 
 " Function to be called on file creation.
 "
@@ -62,7 +66,11 @@ let g:code_notes#note_name_format = "My_Function_To_Format_The_Path"
 " file.
 "
 " Defaults to `# repo/relative_path.cpp` and a new line.
-let g:code_notes#note_template = get(g:, "code_notes#note_template", "code_notes#get_file_template")
+function! CodeNoteTemplate(file_name) abort
+    return ["# " . a:file_name, ""]
+endfunction
+
+let g:code_notes#note_template = "CodeNoteTemplate"
 
 " Function to be called that will format a visual selection.
 "
@@ -71,7 +79,12 @@ let g:code_notes#note_template = get(g:, "code_notes#note_template", "code_notes
 "
 " Defaults to making a code fenced block of markdown, with the language included,
 " based on the `filetype`.
-let g:code_notes#format_selection = get(g:, "code_notes#format_selection", "code_notes#format_lines")
+function! CodeNoteVisualSelection(lines) abort
+    let l:langage = &ft
+    return ["", "```" . l:langage] + a:lines + ["```", ""]
+endfunction
+
+let g:code_notes#format_selection = "CodeNoteVisualSelection"
 ```
 
 ### Custom Binds
