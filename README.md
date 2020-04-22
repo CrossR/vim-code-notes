@@ -2,25 +2,101 @@
 
 A simple way to take notes on code in (neo)vim.
 
-Usage idea:
+### Usage
 
- - Install plugin, set a "notes folder".
- - When in a file, running a command will generate a notes file for that file.
-    - That is, for `oni2/src/Core/Filter.re` it would make
-        `notes/oni2/src/Core/Filter.re.md`. (Perhaps have a function option to set the
-        way that path is generated).
- - The paths should be relative to the git repo root. This makes it portable across
-     machines.
- - Highlighting lines imports them to be commented on.
+Once installed, set the `g:code_notes#notes_root` variable first (see below).
+This pairs best with a wiki plugin, like `lervag/wiki.vim`. I run this with my
+`notes_root`, set to a subdirectory of my main wiki.
+
+`:CodeNote` or `<leader>cn` without a visual selection will open a new file for the
+current file. This will open a vertical split for notes on the current file.
+
+`:CodeNoteVisual` or `<leader>cn` with a visual selection, will take the current visual
+selection and produce a note file with that selection (or append it to the existing
+file).
+
+By default, we assume Markdown, so new files are created with markdown headers, and
+visual selections are added to code fences. This can be changed, as outlined below.
+
+Mappings can be changed, as outlined below.
+
+### Installation
+
+Can be installed with `vim-plug` or any other similar package manager with:
+
+```vim
+Plug 'CrossR/vim-code-notes'
+```
+
+### Config Options
+
+```vim
+" Where notes should be stored.
+"
+" Defaults to empty and MUST be set.
+let g:code_notes#notes_root = "~/git/wiki/docs/code"
+
+" Extension to be used for each note file.
+" Effectively lets the filetype be picked.
+"
+" Defaults to ".md"
+let g:code_notes#note_ext = ".md"
+
+" Function to be called that will transform a file path
+" into a path to be used for the note.
+"
+" Should be a function that takes one argument, the repo relative path.
+" For a file like '~/git/vim-code-notes/plugin/code_notes.vim'
+" The argument given is 'plugin/code_notes.vim'
+" Any remaining '/' left in the path will be treated as folders,
+" and created.
+" Returns a string, for the notes path.
+"
+" Defaults to swapping all '/' -> '_'.
+let g:code_notes#note_name_format = "My_Function_To_Format_The_Path"
+
+" Function to be called on file creation.
+"
+" Should be a function that takes one argument, the repo relative
+" path. Returns a list of strings for each line to be added to the new
+" file.
+"
+" Defaults to `# repo/relative_path.cpp` and a new line.
+let g:code_notes#note_template = get(g:, "code_notes#note_template", "code_notes#get_file_template")
+
+" Function to be called that will format a visual selection.
+"
+" Should be a function that takes one argument, the list of visual selected lines.
+" Returns a list of strings, for each of the lines to be inserted.
+"
+" Defaults to making a code fenced block of markdown, with the language included,
+" based on the `filetype`.
+let g:code_notes#format_selection = get(g:, "code_notes#format_selection", "code_notes#format_lines")
+```
+
+### Custom Binds
+
+```vim
+" Remap the follow function with the following.
+" Replace <leader>cn to swap the bind.
+" cn -> Code note
+nmap <silent><buffer> <leader>cn <Plug>OpenNotesForFile
+vmap <silent><buffer> <leader>cn <Plug>OpenNotesForFileVisual
+```
+
+### TODO
 
 Follow ups, assuming its useful:
 
+ - Sort out writing to file. It would be nicer to set the lines so the undo tree is
+     correctly set.
+ - User config for root files, not just `.git`.
+ - Index file, to contain the full table of contents of the notes.
  - Move command, for when `repo/a/b/c.cpp` moves to `repo/d/e/c.cpp`, relocate or link
      files.
  - Sign column/lightline etc support (i.e. anyway of saying "A notes file exists for
      this").
      - Could be useful to include specific versions of this...
- - Templates for notes files.
+ - More complex templates for notes files.
  - Parsing of certain sections for certain things. I.e. a `# TODO` section.
     -  That could be parsed out to be apart of the lightline support.
- - Index file, to contain the full contents of the notes.

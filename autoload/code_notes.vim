@@ -54,7 +54,7 @@ endfunction
 " Format the given file path in whatever way.
 " For a file like '~/git/vim-code-notes/plugin/code_notes.vim'
 " The argument given is 'plugin/code_notes.vim'
-" Any remaining `/` left in the path will be treated as folders,
+" Any remaining '/' left in the path will be treated as folders,
 " and created.
 function! code_notes#format_note_path(repo_relative_path) abort
     return substitute(a:repo_relative_path, "/", "_", "g")
