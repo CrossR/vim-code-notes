@@ -100,7 +100,7 @@ function! code_notes#open_file(lines) abort
 
     " Make a file for the current note file, with a template.
     if !filereadable(l:full_path)
-        let l:file_template = call(g:code_notes#get_file_template, [l:repo_relative_path])
+        let l:file_template = call(g:code_notes#note_template, [l:repo_relative_path])
         call writefile(l:file_template, l:full_path)
     endif
 
