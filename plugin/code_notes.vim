@@ -6,6 +6,8 @@
 "
 
 let g:code_notes#notes_root = get(g:, "code_notes#notes_root", "")
+let g:code_notes#note_ext = get(g:, "code_notes#note_ext", ".md")
+let g:code_notes#note_name_format = get(g:, "code_notes#note_name_format", "code_notes#format_note_path")
 
 function! s:warn_message(msg) abort
     echohl ErrorMsg
@@ -17,8 +19,20 @@ function! s:get_file_template(file_name) abort
     return ["# " . a:file_name, ""]
 endfunction
 
+" Format the given file path in whatever way.
+" For a file like '~/git/vim-code-notes/plugin/code_notes.vim'
+" The argument given is 'plugin/code_notes.vim'
+" Any remaining `/` left in the path will be treated as folders,
+" and created.
+function! code_notes#format_note_path(repo_relative_path) abort
+    return substitute(a:repo_relative_path, "/", "_", "g")
+endfunction
+
+" Get the path of the current file, relative to the project root.
+" For a file like '~/git/vim-code-notes/plugin/code_notes.vim'
+" The result given is 'plugin/code_notes.vim'
 function! s:get_repo_relative_path(git_repo_path) abort
-    let l:current_path = expand("%:p") " TODO: May want to pass this.
+    let l:current_path = expand("%:p")
 
     let l:git_repo_name = fnamemodify(a:git_repo_path, ":t")
     let l:repo_relative_path = substitute(l:current_path, a:git_repo_path, "", "")
@@ -26,6 +40,7 @@ function! s:get_repo_relative_path(git_repo_path) abort
     return l:repo_relative_path[1:]
 endfunction
 
+" Open a notes file in a vertical split for the given file.
 function! code_notes#open_file() abort
 
     " Can't do anything without a notes folder.
@@ -46,14 +61,11 @@ function! code_notes#open_file() abort
 
     " The formatted name for the note.
     "  plugin/code_notes.vim -> plugin_code_notes.vim
-    "  TODO: Config option, to allow the folder formatting to be set.
-    let l:note_file = substitute(l:repo_relative_path, "/", "_", "g")
+    let l:note_file = call(g:code_notes#note_name_format, [l:repo_relative_path])
 
     " The final path of where the note will live, relative to the
     " notes root.
-    " TODO: Config option for extension.
-    let l:note_path = l:git_repo_name . "/" . l:note_file . ".md"
-    call s:warn_message(l:note_path)
+    let l:note_path = l:git_repo_name . "/" . l:note_file . g:code_notes#note_ext
 
     " Final bit of tidying to add on the notes_root, and check its
     " full formed.
@@ -63,13 +75,11 @@ function! code_notes#open_file() abort
 
     " Make a folder to store the current note file in if needed.
     if !isdirectory(l:note_folder)
-        call mkdir(l:note_folder, "p", 0755) " TODO: Config?
+        call mkdir(l:note_folder, "p", 0755)
     endif
 
-    call s:warn_message(l:full_path)
     " Make a file for the current note file, with a template.
     if !filereadable(l:full_path)
-        call s:warn_message("Writing to file...")
         let l:file_template = s:get_file_template(l:repo_relative_path)
         call writefile(l:file_template, l:full_path)
     endif
