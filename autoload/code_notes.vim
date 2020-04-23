@@ -55,6 +55,39 @@ function! s:get_repo_path() abort
     return l:potential_repo
 endfunction
 
+" Get the full note path, and the repo relative path for the current file.
+"
+" That is, for a root of ~/git/code_notes
+" and a file of ~/git/vim-code-notes/plugin/code_notes.vim
+"
+" Return ~/git/code_notes/vim-code_notes/plugin_code_notes.vim.md
+" (With user formatting and extension)
+function! s:get_note_paths() abort
+    " Get the full repo path, and its name, i.e.:
+    "  /home/ryan/git/vim-code-notes -> git_repo_path
+    "  vim-code-notes -> git_repo_name
+    let l:git_repo_path = s:get_repo_path()
+    let l:git_repo_name = fnamemodify(l:git_repo_path, ":t")
+
+    " The repository relative path:
+    "  ~/git/vim-code-notes/plugin/code_notes.vim -> plugin/code_notes.vim
+    let l:repo_relative_path = s:get_repo_relative_path(l:git_repo_path)
+
+    " The formatted name for the note.
+    "  plugin/code_notes.vim -> plugin_code_notes.vim
+    let l:note_file = call(g:code_notes#note_name_format, [l:repo_relative_path])
+
+    " The final path of where the note will live, relative to the notes root.
+    let l:note_path = l:git_repo_name . "/" . l:note_file . g:code_notes#note_ext
+
+    " Final bit of tidying to add on the notes_root, and check its full
+    " formed.
+    let l:relative_full_path = g:code_notes#notes_root . "/" . l:note_path
+    let l:full_path = expand(simplify(l:relative_full_path))
+
+    return [l:full_path, l:repo_relative_path]
+endfunction
+
 " Default file template.
 " List of strings, with each item a line in the new file.
 " file_name argument is a repository relative path.
@@ -78,6 +111,25 @@ function! code_notes#format_note_path(repo_relative_path) abort
     return substitute(a:repo_relative_path, "/", "_", "g")
 endfunction
 
+" Function that will return 1 if a note is available for the current file.
+function! code_notes#check_for_note() abort
+    let l:note_paths = s:get_note_paths()
+    let l:full_path = l:note_paths[0]
+
+    " If there is a file, then return True.
+    if filereadable(l:full_path)
+        return 1
+    endif
+
+    " If there is no file, but a buffer, return True.
+    if buflisted(bufname(l:full_path))
+        return 1
+    endif
+
+    " Otherwise, there is no note.
+    return 0
+endfunction
+
 " Open a notes file in a vertical split for the given file.
 function! code_notes#open_file(lines) abort
 
@@ -87,27 +139,9 @@ function! code_notes#open_file(lines) abort
         return
     endif
 
-    " Get the full repo path, and its name, i.e.:
-    "  /home/ryan/git/vim-code-notes -> git_repo_path
-    "  vim-code-notes -> git_repo_name
-    let l:git_repo_path = s:get_repo_path()
-    let l:git_repo_name = fnamemodify(l:git_repo_path, ":t")
-
-    " The repository relative path:
-    "  ~/git/vim-code-notes/plugin/code_notes.vim -> plugin/code_notes.vim
-    let l:repo_relative_path = s:get_repo_relative_path(l:git_repo_path)
-
-    " The formatted name for the note.
-    "  plugin/code_notes.vim -> plugin_code_notes.vim
-    let l:note_file = call(g:code_notes#note_name_format, [l:repo_relative_path])
-
-    " The final path of where the note will live, relative to the notes root.
-    let l:note_path = l:git_repo_name . "/" . l:note_file . g:code_notes#note_ext
-
-    " Final bit of tidying to add on the notes_root, and check its full
-    " formed.
-    let l:relative_full_path = g:code_notes#notes_root . "/" . l:note_path
-    let l:full_path = expand(simplify(l:relative_full_path))
+    let l:note_paths = s:get_note_paths()
+    let l:full_path = l:note_paths[0]
+    let l:repo_relative_path = l:note_paths[1]
     let l:note_folder = fnamemodify(l:full_path, ":h")
 
     " Make a folder to store the current note file in if needed.

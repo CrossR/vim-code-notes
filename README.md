@@ -20,6 +20,9 @@ visual selections are added to code fences. This can be changed, as outlined bel
 
 Mappings can be changed, as outlined below.
 
+A helper function (`code_notes#check_for_note`) exists to help setup lightline, or any
+other status bar plugins or similar.
+
 ### Installation
 
 Can be installed with `vim-plug` or any other similar package manager with:
@@ -110,9 +113,6 @@ Follow ups, assuming its useful:
  - Index file, to contain the full table of contents of the notes.
  - Move command, for when `repo/a/b/c.cpp` moves to `repo/d/e/c.cpp`, relocate or link
      files.
- - Sign column/lightline etc support (i.e. anyway of saying "A notes file exists for
-     this").
-     - Could be useful to include specific versions of this...
  - More complex templates for notes files.
  - Parsing of certain sections for certain things. I.e. a `# TODO` section.
     -  That could be parsed out to be apart of the lightline support.
