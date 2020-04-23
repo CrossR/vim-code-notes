@@ -107,7 +107,6 @@ vmap <silent><buffer> <leader>cn <Plug>OpenNotesForFileVisual
 
 Follow ups, assuming its useful:
 
- - Don't open duplicated splits on repeated calls.
  - Index file, to contain the full table of contents of the notes.
  - Move command, for when `repo/a/b/c.cpp` moves to `repo/d/e/c.cpp`, relocate or link
      files.
