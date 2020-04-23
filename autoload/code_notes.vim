@@ -87,7 +87,7 @@ function! code_notes#open_file(lines) abort
         return
     endif
 
-    " The full repo path, and its name:
+    " Get the full repo path, and its name, i.e.:
     "  /home/ryan/git/vim-code-notes -> git_repo_path
     "  vim-code-notes -> git_repo_name
     let l:git_repo_path = s:get_repo_path()
@@ -101,12 +101,11 @@ function! code_notes#open_file(lines) abort
     "  plugin/code_notes.vim -> plugin_code_notes.vim
     let l:note_file = call(g:code_notes#note_name_format, [l:repo_relative_path])
 
-    " The final path of where the note will live, relative to the
-    " notes root.
+    " The final path of where the note will live, relative to the notes root.
     let l:note_path = l:git_repo_name . "/" . l:note_file . g:code_notes#note_ext
 
-    " Final bit of tidying to add on the notes_root, and check its
-    " full formed.
+    " Final bit of tidying to add on the notes_root, and check its full
+    " formed.
     let l:relative_full_path = g:code_notes#notes_root . "/" . l:note_path
     let l:full_path = expand(simplify(l:relative_full_path))
     let l:note_folder = fnamemodify(l:full_path, ":h")
@@ -117,12 +116,25 @@ function! code_notes#open_file(lines) abort
     endif
 
     " Open the file in a vertical split.
-    exec "80vsplit" l:full_path
+    if buflisted(bufname(l:full_path))
+        let l:bufmap = map(
+                    \ range(1, winnr('$')),
+                    \ '[bufname(winbufnr(v:val)), v:val]'
+                    \ )
+        let l:thewindow = filter(
+                    \ bufmap,
+                    \ 'v:val[0] =~ bufname(l:full_path)'
+                    \ )[0][1]
+        execute l:thewindow 'wincmd w'
+    else
+        exec "80vsplit" l:full_path
+    endif
 
     " Append the needed lines to the top of the file if its a new file.
-    " This method was used over writefile to maintain the undo tree, and
+    "
+    " append was used over writefile to maintain the undo tree, and
     " not always make the file.
-    if !filereadable(l:full_path)
+    if line('$') == 1 && getline(1) == ''
         let l:file_template = call(g:code_notes#note_template, [l:repo_relative_path])
         let l:write_failed = append(0, l:file_template)
         if l:write_failed

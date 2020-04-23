@@ -107,9 +107,6 @@ vmap <silent><buffer> <leader>cn <Plug>OpenNotesForFileVisual
 
 Follow ups, assuming its useful:
 
- - Sort out writing to file. It would be nicer to set the lines so the undo tree is
-     correctly set. Ideally, we wouldn't save the file either, allowing backing out
-     of making a note.
  - Don't open duplicated splits on repeated calls.
  - Index file, to contain the full table of contents of the notes.
  - Move command, for when `repo/a/b/c.cpp` moves to `repo/d/e/c.cpp`, relocate or link
