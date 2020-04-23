@@ -24,6 +24,9 @@ function! s:get_repo_relative_path(git_repo_path) abort
     return l:repo_relative_path[1:]
 endfunction
 
+" Get the currently visually selected lines.
+" Taken from
+" https://stackoverflow.com/questions/1533565/
 function! s:get_visual_selection() abort
     " Why is this not a built-in Vim script function?!
     let [line_start, column_start] = getpos("'<")[1:2]
@@ -35,6 +38,21 @@ function! s:get_visual_selection() abort
     let lines[-1] = lines[-1][: column_end - (&selection == 'inclusive' ? 1 : 2)]
     let lines[0] = lines[0][column_start - 1:]
     return lines
+endfunction
+
+" Get the repository path for the current file.
+function! s:get_repo_path() abort
+    let l:potential_repo = ""
+    for root_dir in g:code_notes#root_dirs
+        let l:potential_repo = finddir(root_dir . "/..", expand("%:p:h") . ";")
+
+        if l:potential_repo != ""
+            let l:git_repo_path = l:potential_repo
+            break
+        endif
+    endfor
+
+    return l:potential_repo
 endfunction
 
 " Default file template.
@@ -72,7 +90,7 @@ function! code_notes#open_file(lines) abort
     " The full repo path, and its name:
     "  /home/ryan/git/vim-code-notes -> git_repo_path
     "  vim-code-notes -> git_repo_name
-    let l:git_repo_path = finddir(".git/..", expand("%:p:h") . ";")
+    let l:git_repo_path = s:get_repo_path()
     let l:git_repo_name = fnamemodify(l:git_repo_path, ":t")
 
     " The repository relative path:

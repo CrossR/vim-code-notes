@@ -42,6 +42,12 @@ let g:code_notes#notes_root = "~/git/wiki/docs/code"
 " Defaults to ".md"
 let g:code_notes#note_ext = ".md"
 
+" List of folders to look for in the root of a project.
+" Will be looked for in turn.
+"
+" Defaults to [".git"]
+let g:code_notes#root_dirs = [".git"]
+
 " Function to be called that will transform a file path
 " into a path to be used for the note.
 "
@@ -105,7 +111,6 @@ Follow ups, assuming its useful:
      correctly set. Ideally, we wouldn't save the file either, allowing backing out
      of making a note.
  - Don't open duplicated splits on repeated calls.
- - User config for root files, not just `.git`.
  - Index file, to contain the full table of contents of the notes.
  - Move command, for when `repo/a/b/c.cpp` moves to `repo/d/e/c.cpp`, relocate or link
      files.
