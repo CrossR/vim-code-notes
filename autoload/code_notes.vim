@@ -98,18 +98,27 @@ function! code_notes#open_file(lines) abort
         call mkdir(l:note_folder, "p", 0755)
     endif
 
-    " Make a file for the current note file, with a template.
+    " Open the file in a vertical split.
+    exec "80vsplit" l:full_path
+
+    " Append the needed lines to the top of the file if its a new file.
+    " This method was used over writefile to maintain the undo tree, and
+    " not always make the file.
     if !filereadable(l:full_path)
         let l:file_template = call(g:code_notes#note_template, [l:repo_relative_path])
-        call writefile(l:file_template, l:full_path)
+        let l:write_failed = append(0, l:file_template)
+        if l:write_failed
+            call s:warn_message("Failed to append template to file...")
+        endif
     endif
 
+    " Append the visual selection lines to the bottom of the file.
     if a:lines != []
-        call writefile(a:lines, l:full_path, "a")
+        let l:write_failed = append(line('$'), a:lines)
+        if l:write_failed
+            call s:warn_message("Failed to append lines to file...")
+        endif
     endif
-
-    " Finally open the file.
-    exec "80vsplit" l:full_path
 endfunction
 
 " Wrapper of open_file, that passes over the currently selected lines.
